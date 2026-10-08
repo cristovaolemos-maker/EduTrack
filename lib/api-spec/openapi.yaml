@@ -2,14 +2,40 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 1.0.0
+  description: API REST do EduTrack — Sistema de Gestão Acadêmica
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+    description: Estado do serviço
+  - name: auth
+    description: Sessão e autenticação
+  - name: dashboard
+    description: Indicadores acadêmicos
+  - name: students
+    description: Alunos
+  - name: teachers
+    description: Professores
+  - name: subjects
+    description: Disciplinas
+  - name: classes
+    description: Turmas
+  - name: enrollments
+    description: Matrículas
+  - name: assessments
+    description: Avaliações
+  - name: grades
+    description: Notas
+  - name: attendance
+    description: Frequência
+  - name: announcements
+    description: Avisos
+  - name: reports
+    description: Relatórios
+  - name: audit
+    description: Auditoria
 paths:
   /healthz:
     get:
@@ -24,8 +50,679 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Iniciar sessão
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Sessão iniciada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Encerrar sessão
+      responses:
+        "204":
+          description: Sessão encerrada
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Consultar usuário da sessão atual
+      responses:
+        "200":
+          description: Usuário autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Indicadores do usuário autenticado
+      responses:
+        "200":
+          description: Resumo calculado a partir dos dados acadêmicos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: Listar alunos
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: Página de alunos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentPage"
+    post:
+      operationId: createStudent
+      tags: [students]
+      summary: Cadastrar aluno e usuário vinculado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentInput"
+      responses:
+        "201":
+          description: Aluno criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+  /teachers:
+    get:
+      operationId: listTeachers
+      tags: [teachers]
+      summary: Listar professores
+      responses:
+        "200":
+          description: Professores
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Teacher" }
+    post:
+      operationId: createTeacher
+      tags: [teachers]
+      summary: Cadastrar professor e usuário vinculado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeacherInput"
+      responses:
+        "201":
+          description: Professor criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Teacher"
+  /subjects:
+    get:
+      operationId: listSubjects
+      tags: [subjects]
+      summary: Listar disciplinas
+      responses:
+        "200":
+          description: Disciplinas cadastradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Subject" }
+    post:
+      operationId: createSubject
+      tags: [subjects]
+      summary: Cadastrar disciplina
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubjectInput"
+      responses:
+        "201":
+          description: Disciplina criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+  /classes:
+    get:
+      operationId: listClasses
+      tags: [classes]
+      summary: Listar turmas permitidas para o perfil
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+      responses:
+        "200":
+          description: Turmas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Classroom" }
+    post:
+      operationId: createClass
+      tags: [classes]
+      summary: Cadastrar turma
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClassInput"
+      responses:
+        "201":
+          description: Turma criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Classroom"
+  /classes/{id}:
+    get:
+      operationId: getClass
+      tags: [classes]
+      summary: Consultar turma e alunos matriculados
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Detalhes da turma
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassDetail"
+  /enrollments:
+    post:
+      operationId: createEnrollment
+      tags: [enrollments]
+      summary: Matricular aluno em turma
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrollmentInput"
+      responses:
+        "201":
+          description: Matrícula criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrollment"
+        "409":
+          description: Matrícula já existente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /assessments:
+    get:
+      operationId: listAssessments
+      tags: [assessments]
+      summary: Listar avaliações das turmas permitidas
+      parameters:
+        - in: query
+          name: classId
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Avaliações
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Assessment" }
+    post:
+      operationId: createAssessment
+      tags: [assessments]
+      summary: Criar avaliação em turma autorizada
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentInput"
+      responses:
+        "201":
+          description: Avaliação criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assessment"
+  /grades:
+    get:
+      operationId: listGrades
+      tags: [grades]
+      summary: Consultar notas próprias ou de turma autorizada
+      parameters:
+        - in: query
+          name: classId
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Notas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Grade" }
+    post:
+      operationId: upsertGrade
+      tags: [grades]
+      summary: Registrar ou editar nota em turma autorizada
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GradeInput"
+      responses:
+        "200":
+          description: Nota salva
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grade" 
+  /attendance:
+    get:
+      operationId: listAttendance
+      tags: [attendance]
+      summary: Consultar frequência própria ou de turma autorizada
+      parameters:
+        - in: query
+          name: classId
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Registros de frequência
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Attendance" }
+    post:
+      operationId: recordAttendance
+      tags: [attendance]
+      summary: Registrar frequência em turma autorizada
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttendanceInput"
+      responses:
+        "201":
+          description: Frequência registrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attendance" 
+  /announcements:
+    get:
+      operationId: listAnnouncements
+      tags: [announcements]
+      summary: Listar avisos visíveis ao usuário
+      responses:
+        "200":
+          description: Avisos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Announcement" }
+    post:
+      operationId: createAnnouncement
+      tags: [announcements]
+      summary: Publicar aviso
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementInput"
+      responses:
+        "201":
+          description: Aviso publicado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+  /reports:
+    get:
+      operationId: getAcademicReport
+      tags: [reports]
+      summary: Relatório acadêmico acessível ao perfil
+      parameters:
+        - in: query
+          name: classId
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Relatório calculado a partir do banco
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcademicReport"
+  /audit:
+    get:
+      operationId: listAuditLogs
+      tags: [audit]
+      summary: Consultar trilha de auditoria (administrador)
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+      responses:
+        "200":
+          description: Registros paginados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditPage"
 components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: edutrack.sid
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema: { type: integer }
   schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+    User:
+      type: object
+      required: [id, name, email, role, status]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [admin, teacher, student] }
+        status: { type: string, enum: [active, inactive] }
+    Session:
+      type: object
+      required: [user]
+      properties:
+        user: { $ref: "#/components/schemas/User" }
+        studentId: { type: ["integer", "null"] }
+        teacherId: { type: ["integer", "null"] }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+    Student:
+      type: object
+      required: [id, userId, name, email, registration, status]
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        registration: { type: string }
+        status: { type: string }
+        phone: { type: ["string", "null"] }
+    StudentInput:
+      type: object
+      required: [name, email, password, registration]
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        registration: { type: string, minLength: 3 }
+        phone: { type: string }
+    StudentPage:
+      type: object
+      required: [items, total, page, limit]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Student" } }
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+    Teacher:
+      type: object
+      required: [id, userId, name, email, area]
+      properties:
+        id: { type: integer }
+        userId: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        area: { type: string }
+    TeacherInput:
+      type: object
+      required: [name, email, password, area]
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        area: { type: string }
+    Subject:
+      type: object
+      required: [id, code, name, workload]
+      properties:
+        id: { type: integer }
+        code: { type: string }
+        name: { type: string }
+        workload: { type: integer }
+    SubjectInput:
+      type: object
+      required: [code, name, workload]
+      properties:
+        code: { type: string, minLength: 2 }
+        name: { type: string, minLength: 2 }
+        workload: { type: integer, minimum: 1 }
+    Classroom:
+      type: object
+      required: [id, name, term, subjectId, subjectName, teacherId, teacherName, studentsCount]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        term: { type: string }
+        subjectId: { type: integer }
+        subjectName: { type: string }
+        teacherId: { type: integer }
+        teacherName: { type: string }
+        studentsCount: { type: integer }
+    ClassInput:
+      type: object
+      required: [name, term, subjectId, teacherId]
+      properties:
+        name: { type: string, minLength: 2 }
+        term: { type: string }
+        subjectId: { type: integer }
+        teacherId: { type: integer }
+    ClassDetail:
+      type: object
+      required: [classroom, students]
+      properties:
+        classroom: { $ref: "#/components/schemas/Classroom" }
+        students: { type: array, items: { $ref: "#/components/schemas/Student" } }
+    Enrollment:
+      type: object
+      required: [id, studentId, classId, enrolledAt, status]
+      properties:
+        id: { type: integer }
+        studentId: { type: integer }
+        classId: { type: integer }
+        enrolledAt: { type: string, format: date-time }
+        status: { type: string }
+    EnrollmentInput:
+      type: object
+      required: [studentId, classId]
+      properties:
+        studentId: { type: integer }
+        classId: { type: integer }
+    Assessment:
+      type: object
+      required: [id, classId, title, date, maxGrade, weight]
+      properties:
+        id: { type: integer }
+        classId: { type: integer }
+        title: { type: string }
+        date: { type: string, format: date }
+        maxGrade: { type: number }
+        weight: { type: number }
+    AssessmentInput:
+      type: object
+      required: [classId, title, date, maxGrade, weight]
+      properties:
+        classId: { type: integer }
+        title: { type: string, minLength: 2 }
+        date: { type: string, format: date }
+        maxGrade: { type: number, exclusiveMinimum: 0 }
+        weight: { type: number, exclusiveMinimum: 0 }
+    Grade:
+      type: object
+      required: [id, studentId, assessmentId, value, assessmentTitle, classId]
+      properties:
+        id: { type: integer }
+        studentId: { type: integer }
+        assessmentId: { type: integer }
+        value: { type: number }
+        assessmentTitle: { type: string }
+        classId: { type: integer }
+        studentName: { type: ["string", "null"] }
+    GradeInput:
+      type: object
+      required: [studentId, assessmentId, value]
+      properties:
+        studentId: { type: integer }
+        assessmentId: { type: integer }
+        value: { type: number, minimum: 0 }
+    Attendance:
+      type: object
+      required: [id, studentId, classId, date, present]
+      properties:
+        id: { type: integer }
+        studentId: { type: integer }
+        classId: { type: integer }
+        date: { type: string, format: date }
+        present: { type: boolean }
+        studentName: { type: ["string", "null"] }
+    AttendanceInput:
+      type: object
+      required: [studentId, classId, date, present]
+      properties:
+        studentId: { type: integer }
+        classId: { type: integer }
+        date: { type: string, format: date }
+        present: { type: boolean }
+    Announcement:
+      type: object
+      required: [id, title, body, audience, createdAt, author]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        body: { type: string }
+        audience: { type: string }
+        createdAt: { type: string, format: date-time }
+        author: { type: string }
+    AnnouncementInput:
+      type: object
+      required: [title, body, audience]
+      properties:
+        title: { type: string, minLength: 2 }
+        body: { type: string, minLength: 2 }
+        audience: { type: string, enum: [all, admin, teacher, student] }
+    Dashboard:
+      type: object
+      required: [role, indicators, performance, upcoming, announcements]
+      properties:
+        role: { type: string }
+        indicators:
+          type: array
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string }
+              value: { type: number }
+              detail: { type: string }
+        performance:
+          type: array
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string }
+              value: { type: number }
+        upcoming: { type: array, items: { $ref: "#/components/schemas/Assessment" } }
+        announcements: { type: array, items: { $ref: "#/components/schemas/Announcement" } }
+    AcademicReport:
+      type: object
+      required: [summary, rows]
+      properties:
+        summary:
+          type: object
+          required: [averageGrade, attendancePercent, studentCount]
+          properties:
+            averageGrade: { type: number }
+            attendancePercent: { type: number }
+            studentCount: { type: integer }
+        rows:
+          type: array
+          items:
+            type: object
+            required: [studentId, studentName, averageGrade, present, sessions]
+            properties:
+              studentId: { type: integer }
+              studentName: { type: string }
+              averageGrade: { type: number }
+              present: { type: integer }
+              sessions: { type: integer }
+    AuditEntry:
+      type: object
+      required: [id, actorName, action, entity, createdAt]
+      properties:
+        id: { type: integer }
+        actorName: { type: string }
+        action: { type: string }
+        entity: { type: string }
+        entityId: { type: ["integer", "null"] }
+        createdAt: { type: string, format: date-time }
+    AuditPage:
+      type: object
+      required: [items, total, page]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/AuditEntry" } }
+        total: { type: integer }
+        page: { type: integer }
     HealthStatus:
       type: object
       properties:

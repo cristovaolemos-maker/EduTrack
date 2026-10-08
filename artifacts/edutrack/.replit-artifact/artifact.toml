@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "EduTrack — Gestão Acadêmica"
+description = "Sistema de gestão acadêmica em português para administradores, professores e alunos, com informações persistidas, permissões por perfil e fluxos acadêmicos reais."
+version = "1.0.0"
+id = "artifacts/edutrack"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20369
+
+[services.development]
+run = "pnpm --filter @workspace/edutrack run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/edutrack", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/edutrack/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20369"
+BASE_PATH = "/"

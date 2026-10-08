@@ -1,0 +1,241 @@
+Desenvolva uma aplicação web full-stack completa chamada **EduTrack — Sistema de Gestão Acadêmica**, com aparência profissional, funcionalidades reais e arquitetura organizada. O projeto será utilizado como portfólio profissional de um estudante de Análise e Desenvolvimento de Sistemas, portanto, priorize boas práticas de programação, segurança, testes e documentação.
+
+**IMPORTANTE:** Não crie apenas um protótipo visual. Implemente frontend, backend, banco de dados persistente, autenticação, autorização, validações e regras de negócio funcionais.
+
+## 1. Tecnologias
+
+Utilize preferencialmente:
+
+* Frontend: Angular com TypeScript.
+* Backend: Node.js, Express e TypeScript.
+* Banco de dados: PostgreSQL.
+* ORM: Prisma.
+* API: REST, documentada com Swagger/OpenAPI.
+* Testes: ferramentas adequadas para testes unitários e de integração.
+* Versionamento: Git e GitHub.
+
+Antes de implementar, verifique a compatibilidade dessas tecnologias com o ambiente disponível no Replit. Se alguma limitação impedir essa arquitetura, explique o motivo e proponha a alternativa mais próxima, sem abandonar a necessidade de um backend real e um banco de dados persistente.
+
+## 2. Objetivo
+
+O EduTrack será um sistema de gestão acadêmica para uma instituição fictícia de ensino, com três perfis de acesso:
+
+**Administrador**
+
+* Gerenciar alunos, professores e usuários.
+* Cadastrar disciplinas e turmas.
+* Realizar matrículas.
+* Gerenciar avisos.
+* Consultar relatórios e indicadores.
+* Consultar registros de auditoria autorizados.
+
+**Professor**
+
+* Visualizar suas turmas.
+* Consultar alunos matriculados.
+* Criar avaliações.
+* Lançar e editar notas.
+* Registrar frequência.
+* Consultar relatórios de desempenho das próprias turmas.
+
+**Aluno**
+
+* Consultar disciplinas e turmas.
+* Visualizar notas e médias.
+* Consultar frequência.
+* Acompanhar avisos e calendário acadêmico.
+* Consultar e editar apenas os dados pessoais autorizados.
+
+As permissões devem ser verificadas no backend em todas as operações. O frontend não deve ser considerado uma barreira de segurança.
+
+## 3. Interface
+
+Crie uma interface moderna, responsiva e profissional, com:
+
+* Identidade visual própria para o EduTrack.
+* Sidebar e navegação organizada.
+* Dashboard com indicadores reais.
+* Cards, tabelas, filtros, paginação e formulários.
+* Gráficos de desempenho acadêmico.
+* Estados de carregamento, sucesso, erro e ausência de dados.
+* Páginas adaptadas para computador, tablet e celular.
+* Página pública de apresentação do produto.
+* Página de login e recuperação de senha.
+
+Toda a interface deve estar em português brasileiro, com boa acessibilidade, tipografia legível e aparência consistente.
+
+## 4. Banco de dados
+
+Modele um banco PostgreSQL relacional com as seguintes entidades:
+
+* User: usuários, e-mail, hash da senha, função e status.
+* Student: matrícula, vínculo com usuário e situação acadêmica.
+* Teacher: vínculo com usuário e área de atuação.
+* Subject: disciplinas, códigos e carga horária.
+* Class: turmas, período letivo, disciplina e professor responsável.
+* Enrollment: matrículas dos alunos nas turmas.
+* Assessment: avaliações, datas e notas máximas.
+* Grade: notas dos alunos nas avaliações.
+* Attendance: registros de frequência.
+* Announcement: avisos e seus destinatários.
+* AuditLog: registros de ações importantes.
+
+Implemente chaves estrangeiras, índices, restrições de integridade, relacionamentos e migrações versionadas.
+
+Impeça matrículas duplicadas e notas associadas a avaliações de turmas às quais o aluno não pertence.
+
+Utilize transações nas operações que precisem manter a consistência de múltiplos registros.
+
+Não utilize localStorage como banco de dados. Todas as informações acadêmicas devem ser persistidas no PostgreSQL.
+
+## 5. Backend e API
+
+Desenvolva uma API REST organizada por módulos, com endpoints para:
+
+* Autenticação.
+* Usuários.
+* Alunos.
+* Professores.
+* Disciplinas.
+* Turmas.
+* Matrículas.
+* Avaliações.
+* Notas.
+* Frequência.
+* Avisos.
+* Dashboards.
+* Relatórios.
+* Auditoria.
+
+Implemente validação dos dados recebidos, paginação, filtros, tratamento centralizado de erros e códigos HTTP apropriados.
+
+Separe rotas, controladores, serviços e acesso ao banco de dados para facilitar manutenção e testes.
+
+Documente os endpoints com Swagger/OpenAPI.
+
+## 6. Autenticação e segurança
+
+Implemente:
+
+* Login e logout funcionais.
+* Senhas protegidas com Argon2id ou bcrypt configurado adequadamente.
+* Sessões seguras com cookies HttpOnly e configurações apropriadas para produção, ou outra estratégia segura devidamente justificada.
+* Proteção das rotas privadas.
+* Controle de acesso baseado em funções e permissões.
+* Validação de autorização no servidor para cada registro solicitado.
+* Rate limiting nos endpoints sensíveis.
+* Proteção contra SQL injection, XSS e CSRF conforme a arquitetura adotada.
+* CORS restritivo e cabeçalhos de segurança.
+* Validação de entradas e tratamento seguro de erros.
+* Segredos exclusivamente em variáveis de ambiente.
+* Logs sem senhas, tokens ou dados sensíveis.
+
+Um aluno não pode visualizar dados de outro aluno alterando IDs nas requisições. Um professor não pode acessar turmas que não lhe foram atribuídas.
+
+Não crie credenciais administrativas fixas em produção. Utilize um processo controlado para criar contas de demonstração apenas em ambiente de desenvolvimento.
+
+Documente as verificações realizadas e as limitações de segurança. Não afirme que o sistema é seguro sem testes.
+
+## 7. Funcionalidades acadêmicas
+
+Implemente as operações reais de cadastro, consulta, edição e desativação de registros, conforme as permissões.
+
+Os professores devem poder criar avaliações, lançar notas e registrar frequência apenas nas turmas autorizadas.
+
+Os alunos devem visualizar somente suas próprias informações acadêmicas.
+
+Calcule as médias de acordo com regras de negócio documentadas, incluindo pesos quando aplicáveis. Calcule a frequência com base nos registros persistidos e apresente o numerador e o denominador utilizados.
+
+Os dashboards devem apresentar indicadores calculados a partir do banco de dados, nunca números fixos inseridos apenas para preencher a interface.
+
+Registre operações importantes na auditoria e evite exclusões que comprometam o histórico acadêmico.
+
+## 8. Dados de demonstração
+
+Crie um seed reproduzível com dados fictícios:
+
+* Um administrador.
+* Dois professores.
+* Dez alunos ou mais.
+* Disciplinas e turmas.
+* Matrículas.
+* Avaliações e notas.
+* Registros de frequência.
+* Avisos.
+
+Documente as contas de teste e suas credenciais de desenvolvimento sem expor esses dados em produção. Garanta que a execução repetida do seed não produza duplicações indevidas.
+
+## 9. Testes
+
+Crie e execute testes para:
+
+* Login válido e inválido.
+* Acesso sem autenticação.
+* Permissões de administrador, professor e aluno.
+* Tentativas de acessar dados de outros usuários.
+* Professor tentando acessar uma turma não autorizada.
+* Matrículas duplicadas.
+* Notas acima do limite permitido.
+* Frequência duplicada conforme as regras estabelecidas.
+* Cálculos de médias e frequência.
+* Persistência dos dados.
+* Validação de entradas e tratamento de erros.
+
+Corrija os problemas encontrados e informe quais testes passaram, falharam ou ainda precisam ser executados.
+
+## 10. GitHub e documentação
+
+Prepare o projeto para publicação no GitHub, incluindo:
+
+* README.md profissional.
+* Descrição do problema e da solução.
+* Lista de funcionalidades.
+* Tecnologias utilizadas.
+* Arquitetura e estrutura de pastas.
+* Diagrama ER do banco de dados.
+* Instruções de instalação e execução.
+* Configuração das variáveis de ambiente.
+* Migrações e seed.
+* Comandos para executar os testes.
+* Documentação da API.
+* Capturas de tela ou instruções para obtê-las.
+* Limitações conhecidas e melhorias futuras.
+* Arquivo .gitignore.
+* Arquivo .env.example sem credenciais.
+* Testes automatizados e scripts necessários.
+
+Não inclua senhas, tokens, arquivos .env ou informações pessoais reais no repositório.
+
+## 11. Organização da implementação
+
+Desenvolva o projeto nas seguintes etapas:
+
+1. Planejamento técnico e estrutura do projeto.
+2. Configuração do ambiente e do banco de dados.
+3. Modelagem, migrações e seed.
+4. Autenticação e autorização.
+5. API REST e regras de negócio.
+6. Interface e navegação.
+7. Dashboards e funcionalidades de cada perfil.
+8. Testes e revisão de segurança.
+9. Documentação e preparação para publicação.
+
+Ao concluir cada etapa, verifique se o que foi implementado funciona antes de avançar.
+
+Se houver limitações de ambiente ou de créditos, priorize a infraestrutura, o banco de dados, a autenticação, as permissões e um fluxo acadêmico completo. Não simule funcionalidades como se estivessem prontas.
+
+## 12. Resultado esperado
+
+Ao terminar, apresente:
+
+* O que foi efetivamente implementado.
+* A arquitetura e as tecnologias utilizadas.
+* Como executar o sistema.
+* Como configurar o banco de dados.
+* Como acessar as contas de demonstração.
+* Como executar os testes.
+* Quais verificações de segurança foram realizadas.
+* Quais funcionalidades estão pendentes.
+* Como publicar a aplicação e preparar o repositório no GitHub.
+
+**Comece apresentando o plano técnico e a estrutura proposta. Em seguida, implemente o sistema progressivamente, priorizando funcionalidade real, segurança, organização e qualidade de código. Não finalize o trabalho apenas com telas estáticas ou dados simulados.**

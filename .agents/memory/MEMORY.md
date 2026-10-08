@@ -1,0 +1,1 @@
+- [PostgreSQL constraint errors](postgres-error-causes.md) — inspect nested `cause.code`; constraint errors can be wrapped before Express sees them.
